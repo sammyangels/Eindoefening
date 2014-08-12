@@ -10,7 +10,7 @@ public class Datum implements IDatum,
     private int maand;
     private int jaar;
     
-    private int temp;
+    private int rollbackDag, rollbackMaand, rollbackJaar;
     
     /**
      * array met de maximaal aantal dagen per maand. <p>
@@ -44,14 +44,20 @@ public class Datum implements IDatum,
      * @param jaar integer
      */
     public Datum(int dag, int maand, int jaar) {
-        this.dag = dag;
-        this.maand = maand;
-        this.jaar = jaar;
+        rollbackDag = this.dag;
+        rollbackMaand = this.maand;
+        rollbackJaar = this.jaar;
         try {
+            this.dag = dag;
+            this.maand = maand;
+            this.jaar = jaar;
             DatumValidatie();
         }
         catch (DatumException ex) {
                 System.err.println("<<" + ex.getThrowable()+ ">> " + ex);
+                this.dag = rollbackDag;
+                this.maand = rollbackMaand;
+                this.jaar = rollbackJaar;
         }
     }
 
@@ -61,14 +67,14 @@ public class Datum implements IDatum,
      */
     @Override
     public void setDag(int dag) {
-        temp = this.dag;
+        rollbackDag = this.dag;
         try {
             this.dag = dag;
             DatumValidatie();
         } 
         catch (DatumException ex) {
                 System.err.println("<<" + ex.getThrowable()+ ">> " + ex);
-                this.dag = temp; 
+                this.dag = rollbackDag; 
         }
     }
     
@@ -78,14 +84,14 @@ public class Datum implements IDatum,
      */
     @Override
     public void setMaand(int maand){
-        temp = this.maand;
+        rollbackMaand = this.maand;
         try {
             this.maand = maand;
             DatumValidatie();
         }
         catch (DatumException ex) {
                 System.err.println("<<" + ex.getThrowable()+ ">> " + ex);
-                this.maand = temp;
+                this.maand = rollbackMaand;
         }
     }
     
@@ -95,14 +101,14 @@ public class Datum implements IDatum,
      */
     @Override
     public void setJaar(int jaar){
-        temp = this.jaar;
+        rollbackJaar = this.jaar;
         try {
             this.jaar = jaar;
             DatumValidatie();
         }
         catch (DatumException ex) {
             System.err.println("<<" + ex.getThrowable()+ ">> " + ex);
-            this.jaar = temp;
+            this.jaar = rollbackJaar;
         }
     }
     
@@ -117,8 +123,6 @@ public class Datum implements IDatum,
         setJaar(jaar);
         setMaand(maand);
         setDag(dag);
-        
-        
     }
     
     /**
