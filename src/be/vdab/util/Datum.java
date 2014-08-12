@@ -5,12 +5,10 @@ package be.vdab.util;
  * @author Dekleermaeker Peter
  */
 public class Datum implements IDatum, 
-                              Comparable{
-    private int dag;
-    private int maand;
-    private int jaar;
-    
-    private int rollbackDag, rollbackMaand, rollbackJaar;
+                              Comparable<Datum>{
+    private int dag=1;
+    private int maand=1;
+    private int jaar=1584;
     
     /**
      * array met de maximaal aantal dagen per maand. <p>
@@ -25,17 +23,8 @@ public class Datum implements IDatum,
      * 0 is een schrikkeljaar <p>
      * -1 is GEEN schrikkeljaar <p>
      */
-    private int schrikkel;
+    private int schrikkel=0;
     
-    /**
-     * Initializatie contructor zonder waardes
-     * init waarde = 1/1/1584
-     */
-    public Datum(){
-        this.dag = 1;
-        this.maand = 1;
-        this.jaar = 1584;
-    }
     
     /**
      * constructor om een datum op te vullen
@@ -44,22 +33,22 @@ public class Datum implements IDatum,
      * @param jaar integer
      */
     public Datum(int dag, int maand, int jaar) {
-        rollbackDag = this.dag;
-        rollbackMaand = this.maand;
-        rollbackJaar = this.jaar;
-        try {
-            this.dag = dag;
-            this.maand = maand;
-            this.jaar = jaar;
-            DatumValidatie();
-        }
-        catch (DatumException ex) {
-                System.err.println("<<" + ex.getThrowable()+ ">> " + ex);
-                this.dag = rollbackDag;
-                this.maand = rollbackMaand;
-                this.jaar = rollbackJaar;
-        }
+
+    	try {
+        	if (DatumValidatie(jaar, 'j'))
+        		this.jaar = jaar;  
+        	schrikkel();
+        	if (DatumValidatie(maand, 'm'))
+        		this.maand = maand;
+        	if (DatumValidatie(dag, 'd'))
+        		this.dag = dag;
+        	
+  		
+    	} catch (DatumException ex) {
+    		System.out.println("<<" + ex.getThrowable()+ ">> " + ex);
+    	}
     }
+    
 
     /**
      * Setter voor dag
@@ -67,14 +56,12 @@ public class Datum implements IDatum,
      */
     @Override
     public void setDag(int dag) {
-        rollbackDag = this.dag;
         try {
-            this.dag = dag;
-            DatumValidatie();
+        	if (DatumValidatie(dag, maand, jaar))
+        		this.dag = dag;
         } 
         catch (DatumException ex) {
-                System.err.println("<<" + ex.getThrowable()+ ">> " + ex);
-                this.dag = rollbackDag; 
+                System.out.println("<<" + ex.getThrowable()+ ">> " + ex);
         }
     }
     
@@ -84,14 +71,12 @@ public class Datum implements IDatum,
      */
     @Override
     public void setMaand(int maand){
-        rollbackMaand = this.maand;
         try {
-            this.maand = maand;
-            DatumValidatie();
+        	if (DatumValidatie(dag, maand, jaar))
+        		this.maand = maand;
         }
         catch (DatumException ex) {
-                System.err.println("<<" + ex.getThrowable()+ ">> " + ex);
-                this.maand = rollbackMaand;
+                System.out.println("<<" + ex.getThrowable()+ ">> " + ex);
         }
     }
     
@@ -101,15 +86,14 @@ public class Datum implements IDatum,
      */
     @Override
     public void setJaar(int jaar){
-        rollbackJaar = this.jaar;
         try {
-            this.jaar = jaar;
-            DatumValidatie();
+        	if (DatumValidatie(dag, maand, jaar))
+        		this.jaar = jaar; 
         }
         catch (DatumException ex) {
-            System.err.println("<<" + ex.getThrowable()+ ">> " + ex);
-            this.jaar = rollbackJaar;
+            System.out.println("<<" + ex.getThrowable()+ ">> " + ex);
         }
+    	schrikkel();
     }
     
     /**
@@ -160,38 +144,68 @@ public class Datum implements IDatum,
     public String toString(){
         return dag + "/" + maand + "/" + jaar;
     }
-    
+
     /**
-     * Comparable van datum
-     * @param d Object
-     * @return  0 is gelijk
-     *          -1 is niet gelijk
+     * compareTo
      */
     @Override
-    public int compareTo(Object d){       // Generics ? Object --> Datum
-        if (dag == ((Datum)d).getDag() &&
-                maand == ((Datum)d).getMaand() &&
-                jaar == ((Datum)d).getJaar())
-            return 0;
-        else
-            return -1;
+    public int compareTo(Datum d){       
+        return (jaar*10000+maand*100+dag)-(d.getJaar()*10000+d.getMaand()*100+d.getDag());
     }
     
-    private void DatumValidatie() throws DatumException{
-        
-        if (!(jaar >= 1584 && jaar <= 4099))
-            throw new DatumException("Jaar niet in de geldige range(1584-4099) ",jaar);
-        
-        if (!(maand >= 1 && maand <= 12))
-            throw new DatumException("Maand niet in de geldige range(1-12) ",maand);
-        
+    /**
+     * Berekening schrikkeljaar
+     */
+    private void schrikkel(){
         if (!((jaar%4 == 0) && (jaar%100 != 0)))
             if (!(jaar%400 == 0))
                 schrikkel = -1;
         else
                 schrikkel = 0;
-         if (!(dag >= 1 && dag <= maxDag[maand]+schrikkel))
-             throw new DatumException("dag niet in de geldige range (1-"+(maxDag[maand]+schrikkel)+") ",dag);
+    }
+    
+    /**
+     * Validatie volledige datum
+     * @param dd int
+     * @param mm int 
+     * @param jj int
+     * @return altijd true, bij een probleem wordt er een exception gethrowed
+     * @throws DatumException
+     */
+    private boolean DatumValidatie(int dd, int mm, int jj) throws DatumException{
+    	if (mm != 2)
+    		schrikkel = 0;
+    	if (!(jj >= 1584 && jj <= 4099))
+                throw new DatumException("Jaar niet in de geldige range(1584-4099) ",jj); 
+    	if (!(mm >= 1 && mm <= 12))
+                throw new DatumException("Maand niet in de geldige range(1-12) ",mm);
+    	if (!(dd >= 1 && dd <= maxDag[mm]+schrikkel))
+    			throw new DatumException("dag niet in de geldige range (1-"+(maxDag[mm]+schrikkel)+") ",dd);
+    	return true;
+    }
+    
+    /** 
+     * Validatie van apparte datum velden
+     * @param datumVeld int (dag, maand of jaar)
+     * @param check char aanduiding welk datumveld
+     * @return altijd true, bij een probleem wordt er een exception gethrowed
+     * @throws DatumException
+     */
+    private boolean DatumValidatie(int datumVeld, char check) throws DatumException{
+    	switch (check){
+    	case 'j' :	
+            if (!(datumVeld >= 1584 && datumVeld <= 4099))
+                throw new DatumException("Jaar niet in de geldige range(1584-4099) ",datumVeld); 
+            break;
+    	case 'm':
+    		if (!(datumVeld >= 1 && datumVeld <= 12))
+                throw new DatumException("Maand niet in de geldige range(1-12) ",datumVeld);
+    		break;
+    	case 'd':
+    		if (!(datumVeld >= 1 && datumVeld <= maxDag[maand]+schrikkel))
+    			throw new DatumException("dag niet in de geldige range (1-"+(maxDag[maand]+schrikkel)+") ",datumVeld);
+    	}
+    	return true;
     }
     
 }
