@@ -10,13 +10,14 @@ public class Datum implements IDatum,
     private int maand;
     private int jaar;
     
+    private int temp;
+    
     /**
      * array met de maximaal aantal dagen per maand. <p>
-     * de 99 is voor maand 0, deze gaat alleen maar aangesproken worden bij 
-     * een initializatie zonder parameters. <p>
+     * de 0 is voor maand 0, deze wordt niet gebruikt <p>
      * februari heeft 29 dagen + de waarde in schrikkel.
      */
-    private int[] maxDag = { 99,31,29,31,30,31,30,31,31,30,31,30,31};
+    private int[] maxDag = { 0,31,29,31,30,31,30,31,31,30,31,30,31};
     
     /**
      * variable om te helpen in de berekening van de maand februari voor
@@ -31,9 +32,9 @@ public class Datum implements IDatum,
      * init waarde = 1/1/1584
      */
     public Datum(){
-        setJaar(1584);        
-        setMaand(1);        
-        setDag(1);
+        this.dag = 1;
+        this.maand = 1;
+        this.jaar = 1584;
     }
     
     /**
@@ -43,9 +44,15 @@ public class Datum implements IDatum,
      * @param jaar integer
      */
     public Datum(int dag, int maand, int jaar) {
-        setJaar(jaar);        
-        setMaand(maand);        
-        setDag(dag);
+        this.dag = dag;
+        this.maand = maand;
+        this.jaar = jaar;
+        try {
+            DatumValidatie();
+        }
+        catch (DatumException ex) {
+                System.err.println("<<" + ex.getThrowable()+ ">> " + ex);
+        }
     }
 
     /**
@@ -54,7 +61,15 @@ public class Datum implements IDatum,
      */
     @Override
     public void setDag(int dag) {
-        this.dag = dag;
+        temp = this.dag;
+        try {
+            this.dag = dag;
+            DatumValidatie();
+        } 
+        catch (DatumException ex) {
+                System.err.println("<<" + ex.getThrowable()+ ">> " + ex);
+                this.dag = temp; 
+        }
     }
     
     /**
@@ -63,7 +78,15 @@ public class Datum implements IDatum,
      */
     @Override
     public void setMaand(int maand){
-        this.maand = maand;
+        temp = this.maand;
+        try {
+            this.maand = maand;
+            DatumValidatie();
+        }
+        catch (DatumException ex) {
+                System.err.println("<<" + ex.getThrowable()+ ">> " + ex);
+                this.maand = temp;
+        }
     }
     
     /**
@@ -72,7 +95,15 @@ public class Datum implements IDatum,
      */
     @Override
     public void setJaar(int jaar){
+        temp = this.jaar;
+        try {
             this.jaar = jaar;
+            DatumValidatie();
+        }
+        catch (DatumException ex) {
+            System.err.println("<<" + ex.getThrowable()+ ">> " + ex);
+            this.jaar = temp;
+        }
     }
     
     /**
@@ -83,9 +114,11 @@ public class Datum implements IDatum,
      */
     @Override
     public void setDatum(int dag, int maand, int jaar){
-        setDag(dag);
-        setMaand(maand);
         setJaar(jaar);
+        setMaand(maand);
+        setDag(dag);
+        
+        
     }
     
     /**
@@ -140,13 +173,13 @@ public class Datum implements IDatum,
             return -1;
     }
     
-    private Boolean DatumValidatie() throws DatumException{
+    private void DatumValidatie() throws DatumException{
         
         if (!(jaar >= 1584 && jaar <= 4099))
-            throw new DatumException("Jaar niet in de geldige range(1584-4099)",jaar);
+            throw new DatumException("Jaar niet in de geldige range(1584-4099) ",jaar);
         
         if (!(maand >= 1 && maand <= 12))
-            throw new DatumException("Maand niet in de geldige range(1-12)",maand);
+            throw new DatumException("Maand niet in de geldige range(1-12) ",maand);
         
         if (!((jaar%4 == 0) && (jaar%100 != 0)))
             if (!(jaar%400 == 0))
@@ -154,10 +187,7 @@ public class Datum implements IDatum,
         else
                 schrikkel = 0;
          if (!(dag >= 1 && dag <= maxDag[maand]+schrikkel))
-             throw new DatumException("dag niet in de geldige range (1-"+maxDag[maand]+schrikkel+")",dag);
-
-         return true;
-
+             throw new DatumException("dag niet in de geldige range (1-"+(maxDag[maand]+schrikkel)+") ",dag);
     }
     
 }
