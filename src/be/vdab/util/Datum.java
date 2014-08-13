@@ -1,10 +1,13 @@
 package be.vdab.util;
 
+import java.io.*;
+
 /**
  *
  * @author Dekleermaeker Peter
  */
 public class Datum implements IDatum, 
+                              Serializable,
                               Comparable<Datum>{
     private int dag=1;
     private int maand=1;
@@ -24,7 +27,9 @@ public class Datum implements IDatum,
      * -1 is GEEN schrikkeljaar <p>
      */
     private int schrikkel=0;
+
     
+    public Datum(){};
     
     /**
      * constructor om een datum op te vullen
@@ -35,9 +40,9 @@ public class Datum implements IDatum,
     public Datum(int dag, int maand, int jaar) {
 
     	try {
+                schrikkel(jaar);
         	if (DatumValidatie(jaar, 'j'))
         		this.jaar = jaar;  
-        	schrikkel();
         	if (DatumValidatie(maand, 'm'))
         		this.maand = maand;
         	if (DatumValidatie(dag, 'd'))
@@ -87,13 +92,13 @@ public class Datum implements IDatum,
     @Override
     public void setJaar(int jaar){
         try {
+            schrikkel(jaar);                
         	if (DatumValidatie(dag, maand, jaar))
         		this.jaar = jaar; 
         }
         catch (DatumException ex) {
             System.out.println("<<" + ex.getThrowable()+ ">> " + ex);
         }
-    	schrikkel();
     }
     
     /**
@@ -156,7 +161,7 @@ public class Datum implements IDatum,
     /**
      * Berekening schrikkeljaar
      */
-    private void schrikkel(){
+    private void schrikkel(int jaar){
         if (!((jaar%4 == 0) && (jaar%100 != 0)))
             if (!(jaar%400 == 0))
                 schrikkel = -1;
@@ -173,7 +178,7 @@ public class Datum implements IDatum,
      * @throws DatumException
      */
     private boolean DatumValidatie(int dd, int mm, int jj) throws DatumException{
-    	if (mm != 2)
+    	if (mm != 2) 
     		schrikkel = 0;
     	if (!(jj >= 1584 && jj <= 4099))
                 throw new DatumException("Jaar niet in de geldige range(1584-4099) ",jj); 
