@@ -16,11 +16,12 @@ public abstract class Werknemer implements Serializable,
     
     public Werknemer(){}
     
-    public Werknemer(int personeelsnummer, String naam, WerknemersDatum datumInDienst) 
-                                                    throws Exception{
-        setPersoneelnummer(personeelsnummer);
-        setNaam(naam);
-        setDatumInDienst(datumInDienst);
+    public Werknemer(int personeelsnummer, String naam, WerknemersDatum datumInDienst) {
+        try {
+            setPersoneelnummer(personeelsnummer);
+            setNaam(naam);
+            setDatumInDienst(datumInDienst);
+        } catch (Exception ex) {System.out.println(ex);}
     }
     
     public void setPersoneelnummer(int personeelsnummer) throws Exception{
